@@ -156,8 +156,13 @@ namespace _4craftThreadWatcher
                                 if (!post.HasField("com"))
                                     continue;
 
+                                var sub = string.Empty;
+                                var name = string.Empty;
+                                if (post.HasField("name")) name = post.GetField("name").str;
+                                if (post.HasField("sub")) sub = post.GetField("sub").str;
+
                                 var firstComment = post.GetField("com").str;
-                                if (firstComment.Contains(searchTerm))
+                                if (firstComment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
                                 {
                                     post.AddField("board", boardCode); 
                                     foundThreads.Add(post);
