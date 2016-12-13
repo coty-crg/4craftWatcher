@@ -123,7 +123,7 @@ namespace _4craftThreadWatcher
                 response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
                 response.AddHeader("Access-Control-Allow-Methods", "GET");
                 
-                Console.WriteLine(request.Url.AbsolutePath);
+                // Console.WriteLine(request.Url.AbsolutePath);
                 string responseString = string.Empty;
 
                 // remove the first /data, its just nginx config stuff 
