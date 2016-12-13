@@ -123,11 +123,14 @@ namespace _4craftThreadWatcher
                 response.AddHeader("Access-Control-Allow-Methods", "GET");
                 
                 Console.WriteLine(request.Url.AbsolutePath);
+                string responseString = string.Empty;
 
-                string responseString = string.Empty;  
+                // remove the first /data, its just nginx config stuff 
+                var absolutePath = request.Url.AbsolutePath;
+                absolutePath = absolutePath.Replace("/data", ""); 
 
                 System.Func<string> func;
-                var found = paths.TryGetValue(request.Url.AbsolutePath, out func); 
+                var found = paths.TryGetValue(absolutePath, out func); 
 
                 if (found)
                     responseString = func.Invoke();
