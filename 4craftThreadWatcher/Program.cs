@@ -15,12 +15,16 @@ namespace _4craftThreadWatcher
 
         static void Main(string[] args)
         {
+            // initialize web api 
             WebStuff.SetupWebStuff();
 
-            var scanThread = new Thread(HandleScanning);
-            scanThread.Start(); 
+            // initialize mongo connection and helper 
+            var mongoHelper = new MongoHelper();
 
-            var listenerThread = new Thread(() => SimpleListenerExample("http://127.0.0.1:4000/")); 
+            var scanThread = new System.Threading.Thread(HandleScanning);
+            // scanThread.Start(); 
+
+            var listenerThread = new System.Threading.Thread(() => SimpleListenerExample("http://127.0.0.1:4000/")); 
             listenerThread.Start();
             
             // commands 
@@ -94,19 +98,41 @@ namespace _4craftThreadWatcher
             listener.Start();
             Console.WriteLine("Listening...");
 
+            var paths = new Dictionary<string, System.Func<string>>();
+            paths.Add("/live", () => CachedResult);
+            paths.Add("/archive", () =>
+            {
+                var mongo = MongoHelper.Instance;
+                var threads = mongo.GetAllThreads();
+                var json = new JSONObject(JSONObject.Type.ARRAY);
+                foreach (var thread in threads)
+                    json.Add(thread.GetJson()); 
+
+                return json.ToString(); 
+            });
+
             while (KeepListening)
             {
                 var context = listener.GetContext();
                 var request = context.Request;
                 var response = context.Response;
+                
 
                 response.AddHeader("Access-Control-Allow-Origin", "*");
                 response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
-                response.AddHeader("Access-Control-Allow-Methods", "GET"); 
+                response.AddHeader("Access-Control-Allow-Methods", "GET");
                 
-                var responseString = CachedResult; 
+                Console.WriteLine(request.Url.AbsolutePath);
+
+                string responseString = string.Empty;  
+
+                System.Func<string> func;
+                var found = paths.TryGetValue(request.Url.AbsolutePath, out func); 
+
+                if (found)
+                    responseString = func.Invoke();
+
                 var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
-            
                 response.ContentLength64 = buffer.Length;
                 var output = response.OutputStream;
                 output.Write(buffer, 0, buffer.Length);
@@ -123,7 +149,7 @@ namespace _4craftThreadWatcher
                 try
                 {
                     var boardString = WebStuff.FetchDataFromURLBlocking("https://a.4cdn.org/boards.json");
-                    Thread.Sleep(10);
+                    System.Threading.Thread.Sleep(10);
 
                     var boardData = new JSONObject(boardString);
                     var boardArr = boardData.GetField("boards").list;
@@ -158,10 +184,10 @@ namespace _4craftThreadWatcher
 
                                 var sub = string.Empty;
                                 var name = string.Empty;
-                                if (post.HasField("name")) name = post.GetField("name").str;
-                                if (post.HasField("sub")) sub = post.GetField("sub").str;
+                                if (post.HasField("name")) name = post.GetField("name").str.ToLower();
+                                if (post.HasField("sub")) sub = post.GetField("sub").str.ToLower();
 
-                                var firstComment = post.GetField("com").str;
+                                var firstComment = post.GetField("com").str.ToLower();
                                 if (firstComment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
                                 {
                                     post.AddField("board", boardCode); 
@@ -172,18 +198,38 @@ namespace _4craftThreadWatcher
                         }
                     }
 
+                    // add threads to the database 
+                    foreach(var thread in foundThreads.list)
+                    {
+                        var num = thread.GetField("no").i;
+                        var mongo = MongoHelper.Instance;
+                        if (mongo.ThreadExists(num))
+                            continue;
+
+                        var boardCode = thread.GetField("board").str; 
+                        var pageUrl = string.Format("https://a.4cdn.org/{0}/thread/{1}.json", boardCode, num);
+                        var response = WebStuff.FetchDataFromURLBlocking(pageUrl);
+                        var pageJson = new JSONObject(response);
+                        var firstPost = pageJson.GetField("posts").list[0];
+
+                        var dataThread = new Thread(firstPost, boardCode);
+                        mongo.AddThread(dataThread); 
+                    }
+
                     Console.WriteLine("Returning fresh result!");
                     CachedResult = foundThreads.ToString();
                 } catch (Exception e)
                 {
+                    Console.WriteLine(e.Message);
+                    Console.WriteLine(e.StackTrace);
                     Console.WriteLine("Scan failed? Trying again in a sec.");
-                    Thread.Sleep(500); 
+                    System.Threading.Thread.Sleep(500); 
                     continue; 
                 }
 
                 try
                 {
-                    Thread.Sleep(1000 * 60 * 5); // scan once every 5 minutes 
+                    System.Threading.Thread.Sleep(1000 * 60 * 5); // scan once every 5 minutes 
                 } catch(ThreadInterruptedException e)
                 {
                     Console.WriteLine("Scan thread woken up!"); 
