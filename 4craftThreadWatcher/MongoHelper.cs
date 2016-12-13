@@ -26,7 +26,7 @@ namespace _4craftThreadWatcher
 
             // connection string contains username/password for the database 
             // looks like: mongodb://user:pass@ipaddress:port
-            var connectionString = System.IO.File.ReadAllText(System.Environment.CurrentDirectory + @"./connection-string.txt");
+            var connectionString = System.IO.File.ReadAllText(System.Environment.CurrentDirectory + @"/connection-string.txt");
             Client = new MongoClient(connectionString);
             Database = Client.GetDatabase("WanderingCorgi");
             Threads = Database.GetCollection<BsonDocument>("Threads");
