@@ -22,7 +22,7 @@ namespace _4craftThreadWatcher
             var mongoHelper = new MongoHelper();
 
             var scanThread = new System.Threading.Thread(HandleScanning);
-            // scanThread.Start(); 
+            scanThread.Start(); 
 
             var listenerThread = new System.Threading.Thread(() => SimpleListenerExample("http://127.0.0.1:4000/")); 
             listenerThread.Start();
@@ -100,6 +100,7 @@ namespace _4craftThreadWatcher
 
             var paths = new Dictionary<string, System.Func<string>>();
             paths.Add("/live", () => CachedResult);
+            paths.Add("/", () => CachedResult);
             paths.Add("/archive", () =>
             {
                 var mongo = MongoHelper.Instance;
