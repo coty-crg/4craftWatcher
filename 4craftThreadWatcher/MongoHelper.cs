@@ -12,7 +12,7 @@ using System.IO;
 
 namespace _4craftThreadWatcher
 {
-    public class MongoHelper
+    public class MongoHelper 
     {
         public static MongoHelper Instance; // singleton reference 
 
