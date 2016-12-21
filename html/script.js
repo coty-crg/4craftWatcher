@@ -65,4 +65,4 @@ function Refresh(){
 }
 
 Refresh(); 
-setInterval(() => Refresh(), 1000 * 10); 
+setInterval(() => Refresh(), 1000 * 60); 
