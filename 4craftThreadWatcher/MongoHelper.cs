@@ -69,6 +69,22 @@ namespace _4craftThreadWatcher
             return count > 0;
         }
 
+        public List<VillagerComment> GetAllComments()
+        {
+            var filter = new BsonDocument();
+            var firstResult = VillagerComments.Find(filter);
+            var list = firstResult.ToList();
+
+            var finalList = new List<VillagerComment>();
+            foreach (var item in list)
+            {
+                var comment = BsonSerializer.Deserialize<VillagerComment>(item);
+                finalList.Add(comment);
+            }
+
+            return finalList;
+        }
+
         public List<Thread> GetAllThreads()
         {
             var filter = new BsonDocument();

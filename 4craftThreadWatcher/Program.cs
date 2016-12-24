@@ -118,6 +118,17 @@ namespace _4craftThreadWatcher
                 var comment = new VillagerComment(data);
                 MongoHelper.Instance.AddMessage(comment); 
                 return "{successful: true}"; 
+            });
+
+            paths.Add("/comments", data =>
+            {
+                var allComments = MongoHelper.Instance.GetAllComments();
+
+                var list = new JSONObject(JSONObject.Type.ARRAY); 
+                foreach(var comment in allComments)
+                    list.Add(comment.Message); 
+                
+                return list.ToString(); 
             }); 
 
             while (KeepListening)
