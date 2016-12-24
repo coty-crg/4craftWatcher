@@ -127,7 +127,8 @@ namespace _4craftThreadWatcher
                 var list = new JSONObject(JSONObject.Type.ARRAY); 
                 foreach(var comment in allComments)
                 {
-                    var safe = comment.Message.Replace("\"", "\\\""); 
+                    var safe = comment.Message.Replace("\\", "\\\\"); 
+                    safe = safe.Replace("\"", "\\\""); 
                     list.Add(safe); 
                 }
                 
