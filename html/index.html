@@ -59,17 +59,22 @@
 
 	<hr class="abovePostForm"/>
 
-	<p>
-		in the server, villagers will say random messages. 
-		<br/>if you want to make them shitpost, anything you post here will show up in the game. 
-		<br/>in game, the substring $player will be replaced with a random player's name.
-	</p>
+		<div class="boardBanner">
+			<br/><img src="more_chat.gif"></img>
+			<p>
+					 in the server, villagers will say random messages. 
+				<br/>if you want to make them shitpost, anything you post here will show up in the game. 
+				<br/>in game, the substring $player will be replaced with a random player's name.
+				<br/>view other player's suggestions with this <a href="https://archive.4craft.us/data/comments">api  call</a>
+				<br/>source code for the plugin <a href="https://github.com/coty-crg/ChatBubbles">here</a>
+			</p>
+			<font color="black">Suggest villager comments:</font>
+			<br/><input type="text" name="villagercomment"><br>
+			<input type="submit" value="Submit" onclick="SendData(document.getElementsByName('villagercomment')[0].value);">
+			<b class="successMessage"></b>
+		</div>
 
 	
-		Suggest villager comments:
-		<br/><input type="text" name="villagercomment"><br>
-		<input type="submit" value="Submit" onclick="SendData(document.getElementsByName('villagercomment')[0].value);">
-		<b class="successMessage"></b>
 
 	<hr class="abovePostForm"/>
 	
@@ -88,7 +93,7 @@
 	<hr/>
 	<center>
 	<p>		  Source code for the page and thread watcher <a href="https://github.com/coty-crg/4craftWatcher">here</a>.
-		<br/> You can access the thread watcher's public api <a href="https://archive.4craft.us/data">here</a>.
+		<br/> You can access the thread watcher's public api <a href="https://archive.4craft.us/data/live">here</a> and <a href="https://archive.4craft.us/data/archive">here</a>.
 	</p>
 	<hr/>
 	~Post of the month~
