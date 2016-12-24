@@ -41,8 +41,17 @@ namespace _4craftThreadWatcher
             Console.WriteLine("Initialized connection with local MongoDB server.");
         }
         
+        public bool HasMessage(VillagerComment comment)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("Message", comment.Message);
+            return VillagerComments.Find(filter).Count() > 0; 
+        }
+
         public bool AddMessage(VillagerComment comment)
         {
+            if (HasMessage(comment))
+                return false; 
+
             var commentDoc = comment.ToBsonDocument();
             VillagerComments.InsertOne(commentDoc);
             return true; 
