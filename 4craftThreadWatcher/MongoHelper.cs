@@ -19,6 +19,7 @@ namespace _4craftThreadWatcher
         public MongoClient Client;
         public IMongoDatabase Database;
         public IMongoCollection<BsonDocument> Threads;
+        public IMongoCollection<BsonDocument> VillagerComments;
 
         public MongoHelper()
         {
@@ -30,6 +31,7 @@ namespace _4craftThreadWatcher
             Client = new MongoClient(connectionString);
             Database = Client.GetDatabase("WanderingCorgi");
             Threads = Database.GetCollection<BsonDocument>("Threads");
+            VillagerComments = Database.GetCollection<BsonDocument>("VillagerComments"); 
 
             // custom indexing 
             var ThreadNumber = Builders<BsonDocument>.IndexKeys.Ascending("ThreadNumber");
@@ -39,6 +41,13 @@ namespace _4craftThreadWatcher
             Console.WriteLine("Initialized connection with local MongoDB server.");
         }
         
+        public bool AddMessage(VillagerComment comment)
+        {
+            var commentDoc = comment.ToBsonDocument();
+            VillagerComments.InsertOne(commentDoc);
+            return true; 
+        }
+
         public bool AddThread(Thread thread)
         {
             var threadDoc = thread.ToBsonDocument();
@@ -74,6 +83,21 @@ namespace _4craftThreadWatcher
             }
 
             return finalList;
+        }
+    }
+
+    [BsonDiscriminator("VillagerComment")]
+    public class VillagerComment
+    {
+        [BsonId] public ObjectId Id;
+        public string Message; 
+
+        public VillagerComment(string message)
+        {
+            if (message.Length > 255)
+                message = message.Substring(0, 255);
+
+            Message = message; 
         }
     }
 

@@ -54,6 +54,23 @@ function UpdateArchivedThreads(threads){
     }); 
 }
 
+function SendData(message){
+    $(".successMessage").replaceWith("<b class=\"successMessage\">Submitting..</b>"); 
+
+    $.ajax({
+        data: message,
+        type: 'POST',
+        processData: false,
+        url: 'https://archive.4craft.us/data/submit',
+        contentType: 'application/json',
+        success: function (data) {
+            document.getElementsByName('villagercomment')[0].value = ''; 
+            $(".successMessage").replaceWith("<b class=\"successMessage\">Successfully added!</b>"); 
+        }
+    });
+
+}
+
 function Refresh(){
     getData("https://archive.4craft.us/data/live", (data) => {
         UpdateThreads(data); 

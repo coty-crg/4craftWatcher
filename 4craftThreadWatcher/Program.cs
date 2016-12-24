@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
@@ -98,10 +99,10 @@ namespace _4craftThreadWatcher
             listener.Start();
             Console.WriteLine("Listening...");
 
-            var paths = new Dictionary<string, System.Func<string>>();
-            paths.Add("/live", () => CachedResult);
-            paths.Add("/", () => CachedResult);
-            paths.Add("/archive", () =>
+            var paths = new Dictionary<string, System.Func<string, string>>();
+            paths.Add("/live", (data) => CachedResult);
+            paths.Add("/", (data) => CachedResult);
+            paths.Add("/archive", (data) =>
             {
                 var mongo = MongoHelper.Instance;
                 var threads = mongo.GetAllThreads();
@@ -112,12 +113,20 @@ namespace _4craftThreadWatcher
                 return json.ToString(); 
             });
 
+            paths.Add("/submit", (data) =>
+            {
+                var comment = new VillagerComment(data);
+                MongoHelper.Instance.AddMessage(comment); 
+                return "{successful: true}"; 
+            }); 
+
             while (KeepListening)
             {
                 var context = listener.GetContext();
                 var request = context.Request;
                 var response = context.Response;
-                
+
+                var body = new StreamReader(request.InputStream).ReadToEnd();
 
                 response.AddHeader("Access-Control-Allow-Origin", "*");
                 response.AddHeader("Access-Control-Allow-Headers", "Content-Type");
@@ -130,11 +139,14 @@ namespace _4craftThreadWatcher
                 var absolutePath = request.Url.AbsolutePath;
                 absolutePath = absolutePath.Replace("/data", ""); 
 
-                System.Func<string> func;
+                System.Func<string, string> func;
                 var found = paths.TryGetValue(absolutePath, out func); 
 
                 if (found)
-                    responseString = func.Invoke();
+                    responseString = func.Invoke(body);
+
+                if (responseString == null)
+                    responseString = string.Empty; 
 
                 var buffer = System.Text.Encoding.UTF8.GetBytes(responseString);
                 response.ContentLength64 = buffer.Length;
