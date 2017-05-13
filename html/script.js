@@ -89,7 +89,7 @@ function UpdateDiscordAttachments(attachments){
         var description = "<a href=\"" + threadurl + "\" target=\"blank\">[" + attachment.authorUsername + 
 		"]: <span class=\"nameBlock\"><span class=\"name\">" + attachment.filename + "</span></span></a>";
         var imghtml = "<div class=\"file\"><a class=\"fileThumb\" href=\"" + threadurl + "\" target=\"_blank\"><img src=" + threadurl + " style=\"height: " + newHeight + "px; width: " + newWidth + "px;\" title /></a></div>"; 
-        var html = "<div class=\"postContainer replyContainer\"><div class=\"post reply\"><span class=\"datetime\">" + description + "</span><br/>" + imghtml + "<blockquote class=\"postMessage\">" + attachment.contents + "</blockquote> </div></div>";
+        var html = "<div class=\"postContainer replyContainer\"><div class=\"post reply\"><span class=\"datetime\">" + description + "</span><br/>" + imghtml + "<blockquote class=\"postMessage\">" + attachment.content + "</blockquote> </div></div>";
 		
         $(".discordlist").append( "<div class=\"archiveitem\">" + html + "</div>");
     }); 
