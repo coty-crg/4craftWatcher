@@ -79,7 +79,7 @@ public static class WebStuff
         ServicePointManager.ServerCertificateValidationCallback += new RemoteCertificateValidationCallback((sender, certificate, chain, policyErrors) => { return true; });
     }
 
-    public static string FetchDataFromURLBlocking(string url)
+    public static string FetchDataFromURLBlocking(string url, WebHeaderCollection headers = null)
     {
         var data = (string)null;
         var wc = new ImpatientWebClient();
@@ -87,6 +87,10 @@ public static class WebStuff
         try
         {
             wc.Encoding = Encoding.UTF8;
+
+            if (headers != null)
+                wc.Headers = headers; 
+
             data = wc.DownloadString(url);
         } catch (Exception e)
         {

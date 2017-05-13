@@ -22,7 +22,10 @@ namespace _4craftThreadWatcher
             // initialize mongo connection and helper 
             var mongoHelper = new MongoHelper();
 
-            var scanThread = new System.Threading.Thread(HandleScanning);
+            var discordThread = new System.Threading.Thread(HandleScanningDiscord);
+            discordThread.Start(); 
+
+            var scanThread = new System.Threading.Thread(HandleScanning4chan);
             scanThread.Start(); 
 
             var listenerThread = new System.Threading.Thread(() => SimpleListenerExample("http://127.0.0.1:4000/")); 
@@ -133,6 +136,18 @@ namespace _4craftThreadWatcher
                 }
                 
                 return list.ToString(); 
+            });
+
+            paths.Add("/discordattachments", data =>
+            {
+                var mongo = MongoHelper.Instance;
+                var allAttachments = mongo.GetAll<DiscordAttachment>(mongo.DiscordAttachments);
+
+                var list = new JSONObject(JSONObject.Type.ARRAY);
+                foreach (var attachment in allAttachments)
+                    list.Add(attachment.ToString());
+                
+                return list.ToString(); 
             }); 
 
             while (KeepListening)
@@ -173,7 +188,61 @@ namespace _4craftThreadWatcher
             listener.Stop();
         }
         
-        public static void HandleScanning()
+        public static void HandleScanningDiscord()
+        {
+            var mongo = MongoHelper.Instance; 
+            var authToken = System.IO.File.ReadAllText(System.Environment.CurrentDirectory + @"/discord-auth-token.txt");
+
+            var headers = new WebHeaderCollection();
+            headers.Add("Authorization", string.Format("Bot {0}", authToken));
+
+            var discordApi = "https://discordapp.com/api";
+            var channel = "259163205937528833"; // archive channel id 
+            var latestId = "133524262630719488"; // hard coded first attachment 
+
+            while (KeepListening)
+            {
+                try
+                {
+                    var url = string.Format("{0}/channels/{1}/messages?after={2}", discordApi, channel, latestId);
+                    var channelString = WebStuff.FetchDataFromURLBlocking(url, headers);
+                    var channelData = new JSONObject(channelString);
+                    var messageList = channelData.list; 
+
+                    // see latest message 
+                    if(messageList.Count > 0)
+                    {
+                        var firstMessage = messageList[0];
+                        latestId = firstMessage.GetField("id").str; 
+                    }
+
+                    // check for attachments 
+                    foreach (var message in messageList)
+                    {
+                        var attachments = message.GetField("attachments").list; 
+                        foreach(var attachment in attachments)
+                        {
+                            var serialized = new DiscordAttachment(attachment);
+                            mongo.Put(mongo.DiscordAttachments, serialized, serialized.id);
+                            Console.WriteLine("Storing {0} as a Discord attachment.", serialized.filename); 
+                            System.Threading.Thread.Sleep(1);
+                        }
+                    }
+
+                    // nothing found? 
+                    // wait for ten minutes before scanning again 
+                    if (messageList.Count == 0)
+                        System.Threading.Thread.Sleep(60 * 10); 
+                    else
+                        System.Threading.Thread.Sleep(10);
+                } catch (Exception e)
+                {
+
+                }
+            }
+        }
+
+        public static void HandleScanning4chan()
         {
             while (KeepListening)
             {

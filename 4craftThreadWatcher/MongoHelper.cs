@@ -20,6 +20,7 @@ namespace _4craftThreadWatcher
         public IMongoDatabase Database;
         public IMongoCollection<BsonDocument> Threads;
         public IMongoCollection<BsonDocument> VillagerComments;
+        public IMongoCollection<BsonDocument> DiscordAttachments;
 
         public MongoHelper()
         {
@@ -31,7 +32,8 @@ namespace _4craftThreadWatcher
             Client = new MongoClient(connectionString);
             Database = Client.GetDatabase("WanderingCorgi");
             Threads = Database.GetCollection<BsonDocument>("Threads");
-            VillagerComments = Database.GetCollection<BsonDocument>("VillagerComments"); 
+            VillagerComments = Database.GetCollection<BsonDocument>("VillagerComments");
+            DiscordAttachments = Database.GetCollection<BsonDocument>("DiscordAttachments"); 
 
             // custom indexing 
             var ThreadNumber = Builders<BsonDocument>.IndexKeys.Ascending("ThreadNumber");
@@ -108,6 +110,101 @@ namespace _4craftThreadWatcher
             }
 
             return finalList;
+        }
+
+        // generics  
+        public List<T> GetAll<T>(IMongoCollection<BsonDocument> documents) where T : class
+        {
+            var filter = new BsonDocument();
+            var firstResult = documents.Find(filter);
+            var list = firstResult.ToList();
+
+            var finalList = new List<T>();
+            foreach (var item in list)
+            {
+                var instance = BsonSerializer.Deserialize<T>(item);
+                finalList.Add(instance);
+            }
+
+            return finalList;
+        }
+
+        public T Get<T>(IMongoCollection<BsonDocument> documents, string id) where T : class
+        {
+            if (!Exists(documents, id))
+                return null;
+
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", id);
+            var firstResult = documents.Find(filter).First();
+            var item = BsonSerializer.Deserialize<T>(firstResult);
+            return item;
+        }
+
+        public T GetKeyValue<T>(IMongoCollection<BsonDocument> documents, string key, string value) where T : class
+        {
+            if (!ExistsKeyValue(documents, key, value))
+                return null;
+
+            var filter = Builders<BsonDocument>.Filter.Eq(key, value);
+            var firstResult = documents.Find(filter).First();
+            var item = BsonSerializer.Deserialize<T>(firstResult);
+            return item;
+        }
+
+        public bool Exists(IMongoCollection<BsonDocument> documents, string id)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", id);
+            var count = documents.Find(filter).Count();
+            return count > 0;
+        }
+
+        public bool ExistsKeyValue(IMongoCollection<BsonDocument> documents, string key, string value)
+        {
+            var filter = Builders<BsonDocument>.Filter.Eq(key, value);
+            var count = documents.Find(filter).Count();
+            return count > 0;
+        }
+
+        private bool Create<T>(IMongoCollection<BsonDocument> documents, T item) where T : class
+        {
+            var document = item.ToBsonDocument();
+            documents.InsertOne(document);
+            return true;
+        }
+
+        public bool Put<T>(IMongoCollection<BsonDocument> documents, T item, string id) where T : class
+        {
+            if (!Exists(documents, id))
+                return Create<T>(documents, item);
+
+            var document = item.ToBsonDocument();
+            var filter = Builders<BsonDocument>.Filter.Eq("_id", id);
+            var result = documents.ReplaceOne(filter, document);
+            return result.MatchedCount >= 1 || result.ModifiedCount > 0;
+        }
+    }
+
+
+    [BsonDiscriminator("DiscordAttachment")]
+    public class DiscordAttachment
+    {
+        [BsonId] public string id;
+        public string url;
+        public string proxy_url;
+        public string filename;
+        public int width;
+        public int height;
+        public int size;
+
+        public DiscordAttachment(JSONObject serialized)
+        {
+            id = serialized.GetField("id").str;
+            url = serialized.GetField("url").str;
+            proxy_url = serialized.GetField("proxy_url").str;
+            filename = serialized.GetField("filename").str;
+            width = (int)serialized.GetField("width").i;
+            height = (int)serialized.GetField("height").i;
+            size = (int)serialized.GetField("size").i;
         }
     }
 
