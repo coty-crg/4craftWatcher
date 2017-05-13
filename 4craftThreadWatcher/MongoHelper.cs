@@ -196,7 +196,11 @@ namespace _4craftThreadWatcher
         public int height;
         public int size;
 
-        public DiscordAttachment(JSONObject serialized)
+        public string authorId;
+        public string authorUsername;
+        public string content; 
+
+        public DiscordAttachment(JSONObject serialized, string authorId, string authorUsername, string content)
         {
             id = serialized.GetField("id").str;
             url = serialized.GetField("url").str;
@@ -205,6 +209,10 @@ namespace _4craftThreadWatcher
             width = (int)serialized.GetField("width").i;
             height = (int)serialized.GetField("height").i;
             size = (int)serialized.GetField("size").i;
+
+            this.authorId = authorId;
+            this.authorUsername = authorUsername;
+            this.content = content; 
         }
     }
 

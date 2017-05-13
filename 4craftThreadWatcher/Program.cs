@@ -156,7 +156,10 @@ namespace _4craftThreadWatcher
                     json.AddField("width", attachment.width);
                     json.AddField("height", attachment.height);
                     json.AddField("size", attachment.size);
-                    
+                    json.AddField("authorId", attachment.authorId);
+                    json.AddField("authorUsername", attachment.authorUsername);
+                    json.AddField("content", attachment.content);
+
                     list.Add(json);
                 }
                 
@@ -232,10 +235,16 @@ namespace _4craftThreadWatcher
                     // check for attachments 
                     foreach (var message in messageList)
                     {
-                        var attachments = message.GetField("attachments").list; 
+                        var attachments = message.GetField("attachments").list;
+
+                        var author = message.GetField("author");
+                        var authorId = author.GetField("id").str; 
+                        var authorUsername = author.GetField("username").str;
+                        var content = message.GetField("content").str; 
+
                         foreach(var attachment in attachments)
                         {
-                            var serialized = new DiscordAttachment(attachment);
+                            var serialized = new DiscordAttachment(attachment, authorId, authorUsername, content);
                             mongo.Put(mongo.DiscordAttachments, serialized, serialized.id);
                             Console.WriteLine("Storing {0} as a Discord attachment.", serialized.filename); 
                             System.Threading.Thread.Sleep(1);

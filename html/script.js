@@ -54,6 +54,47 @@ function UpdateArchivedThreads(threads){
     }); 
 }
 
+function UpdateDiscordAttachments(attachments){
+	$(".discorditem").remove(); 
+    
+    if(attachments.length == 0){
+        $(".loadingdegeneracy").replaceWith("<p class=\"nodegeneracyarchive\">No degeneracy found.</p>");
+        return; 
+    }
+    
+    $(".nodegeneracyarchive").remove(); 
+    
+    attachments.forEach(attachment => {
+        $(".loadingdegeneracy").remove();
+        
+		var newWidth = attachment.width; 
+		var newHeight = attachment.height; 
+		
+		// fudge 4chan style thumbnails  
+		if(newWidth > 250 || newHeight > 250){
+			if(attachment.height > attachment.width){
+				var scale =  attachment.width / attachment.height; 
+				newWidth = 250 * scale; 
+				newHeight = 250; 
+			}else{
+				var scale =  attachment.height / attachment.width; 
+				newWidth = 250 ; 
+				newHeight = 250* scale; 
+			}
+		}
+		
+		// discord doesnt have thumbnails 
+		// :V 
+        var threadurl = attachment.url;  
+        var description = "<a href=\"" + threadurl + "\" target=\"blank\">[" + attachment.authorUsername + 
+		"]: <span class=\"nameBlock\"><span class=\"name\">" + attachment.filename + "</span></span></a>";
+        var imghtml = "<div class=\"file\"><a class=\"fileThumb\" href=\"" + threadurl + "\" target=\"_blank\"><img src=" + threadurl + " style=\"height: " + newHeight + "px; width: " + newWidth + "px;\" title /></a></div>"; 
+        var html = "<div class=\"postContainer replyContainer\"><div class=\"post reply\"><span class=\"datetime\">" + description + "</span><br/>" + imghtml + "<blockquote class=\"postMessage\">" + attachment.contents + "</blockquote> </div></div>";
+		
+        $(".discordlist").append( "<div class=\"archiveitem\">" + html + "</div>");
+    }); 
+}
+
 function SendData(message){
     $(".successMessage").replaceWith("<b class=\"successMessage\">Submitting..</b>"); 
 
@@ -79,6 +120,10 @@ function Refresh(){
 	getData("https://archive.4craft.us/data/archive", (data) => {
 		UpdateArchivedThreads(data); 
 	});
+	
+	getData("https://archive.4craft.us/data/discordattachments", (data) => {
+		UpdateDiscordAttachments(data);
+	}); 
 }
 
 Refresh(); 
