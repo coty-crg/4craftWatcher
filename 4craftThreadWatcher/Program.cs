@@ -147,7 +147,18 @@ namespace _4craftThreadWatcher
 
                 var list = new JSONObject(JSONObject.Type.ARRAY);
                 foreach (var attachment in allAttachments)
-                    list.Add(attachment.ToJson());
+                {
+                    var json = new JSONObject();
+                    json.AddField("id", attachment.id);
+                    json.AddField("filename", attachment.filename);
+                    json.AddField("url", attachment.url);
+                    json.AddField("proxy_url", attachment.proxy_url);
+                    json.AddField("width", attachment.width);
+                    json.AddField("height", attachment.height);
+                    json.AddField("size", attachment.size);
+                    
+                    list.Add(json);
+                }
                 
                 return list.ToString(); 
             }); 
