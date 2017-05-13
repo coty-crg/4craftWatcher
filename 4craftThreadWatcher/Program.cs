@@ -4,6 +4,8 @@ using System.IO;
 using System.Net;
 using System.Text;
 using System.Threading;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
 
 namespace _4craftThreadWatcher
 {
@@ -145,7 +147,7 @@ namespace _4craftThreadWatcher
 
                 var list = new JSONObject(JSONObject.Type.ARRAY);
                 foreach (var attachment in allAttachments)
-                    list.Add(attachment.ToString());
+                    list.Add(attachment.ToJson());
                 
                 return list.ToString(); 
             }); 
