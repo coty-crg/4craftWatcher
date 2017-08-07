@@ -255,12 +255,12 @@ namespace _4craftThreadWatcher
                     // nothing found? 
                     // wait for ten minutes before scanning again 
                     if (messageList.Count == 0)
-                        System.Threading.Thread.Sleep(60 * 10); 
+                        System.Threading.Thread.Sleep(60 * 10 * 1000); 
                     else
-                        System.Threading.Thread.Sleep(10);
+                        System.Threading.Thread.Sleep(10 * 1000);
                 } catch (Exception e)
                 {
-                    System.Threading.Thread.Sleep(60 * 10); 
+                    System.Threading.Thread.Sleep(60 * 10 * 1000); 
                 }
             }
         }
@@ -288,6 +288,8 @@ namespace _4craftThreadWatcher
 
                         for (var i = 1; i < pages; ++i)
                         {
+                            System.Threading.Thread.Sleep(100); 
+
                             var pageUrl = string.Format("https://a.4cdn.org/{0}/{1}.json", boardCode, i);
                             var catalogString = WebStuff.FetchDataFromURLBlocking(pageUrl);
                             var catalogJson = new JSONObject(catalogString);
@@ -355,6 +357,7 @@ namespace _4craftThreadWatcher
                     System.Threading.Thread.Sleep(1000 * 60 * 5); // scan once every 5 minutes 
                 } catch(ThreadInterruptedException e)
                 {
+                    System.Threading.Thread.Sleep(1000 * 60 * 5); 
                     Console.WriteLine("Scan thread woken up!"); 
                 }
             }
