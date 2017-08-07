@@ -24,8 +24,9 @@ namespace _4craftThreadWatcher
             // initialize mongo connection and helper 
             var mongoHelper = new MongoHelper();
 
-            var discordThread = new System.Threading.Thread(HandleScanningDiscord);
-            discordThread.Start(); 
+            // temporarily removing the discord scanner - need to rework to use actual sockets and just listen for new posts 
+            //var discordThread = new System.Threading.Thread(HandleScanningDiscord);
+            //discordThread.Start(); 
 
             var scanThread = new System.Threading.Thread(HandleScanning4chan);
             scanThread.Start(); 
@@ -259,7 +260,7 @@ namespace _4craftThreadWatcher
                         System.Threading.Thread.Sleep(10);
                 } catch (Exception e)
                 {
-
+                    System.Threading.Thread.Sleep(60 * 10); 
                 }
             }
         }
