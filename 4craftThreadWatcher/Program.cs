@@ -300,21 +300,47 @@ namespace _4craftThreadWatcher
                                 if (posts.Count == 0)
                                     continue;
 
-                                var post = posts[0];
-                                if (!post.HasField("com"))
+                                var opPost = posts[0];
+                                if (!opPost.HasField("com"))
                                     continue;
 
+                                var no = string.Empty; 
                                 var sub = string.Empty;
                                 var name = string.Empty;
-                                if (post.HasField("name")) name = post.GetField("name").str.ToLower();
-                                if (post.HasField("sub")) sub = post.GetField("sub").str.ToLower();
+                                if (opPost.HasField("no")) no = opPost.GetField("no").str.ToLower(); 
+                                if (opPost.HasField("name")) name = opPost.GetField("name").str.ToLower();
+                                if (opPost.HasField("sub")) sub = opPost.GetField("sub").str.ToLower();
 
-                                var firstComment = post.GetField("com").str.ToLower();
+                                var firstComment = opPost.GetField("com").str.ToLower();
                                 if (firstComment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
                                 {
-                                    post.AddField("board", boardCode); 
-                                    foundThreads.Add(post);
+                                    opPost.AddField("board", boardCode); 
+                                    foundThreads.Add(opPost);
                                     continue;
+                                }
+
+                                var threadUrl = string.Format("https://boards.4chan.org/{0}/thread/{1}.json", boardCode, no);
+                                var postInfo = WebStuff.FetchDataFromURLBlocking(threadUrl);
+                                var postData = new JSONObject(postInfo);
+                                var postList = postData.GetField("posts").list; 
+
+                                foreach(var post in postList)
+                                {
+                                    no = string.Empty;
+                                    sub = string.Empty;
+                                    name = string.Empty;
+
+                                    if (post.HasField("no")) no = post.GetField("no").str.ToLower();
+                                    if (post.HasField("name")) name = post.GetField("name").str.ToLower();
+                                    if (post.HasField("sub")) sub = post.GetField("sub").str.ToLower();
+
+                                    var comment = post.GetField("com").str.ToLower();
+                                    if (comment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
+                                    {
+                                        post.AddField("board", boardCode);
+                                        foundThreads.Add(post);
+                                        continue;
+                                    }
                                 }
                             }
                         }
