@@ -310,7 +310,7 @@ namespace _4craftThreadWatcher
                                 var no = string.Empty; 
                                 var sub = string.Empty;
                                 var name = string.Empty;
-                                if (opPost.HasField("no")) no = opPost.GetField("no").str.ToLower(); 
+                                if (opPost.HasField("no")) no = opPost.GetField("no").i.ToString().ToLower(); 
                                 if (opPost.HasField("name")) name = opPost.GetField("name").str.ToLower();
                                 if (opPost.HasField("sub")) sub = opPost.GetField("sub").str.ToLower();
 
