@@ -325,8 +325,6 @@ namespace _4craftThreadWatcher
                                 var threadUrl = string.Format("https://boards.4chan.org/{0}/thread/{1}.json", boardCode, no);
                                 var postInfo = WebStuff.FetchDataFromURLBlocking(threadUrl);
 
-                                Console.Write(postInfo); 
-
                                 var postData = new JSONObject(postInfo);
                                 if (postData == null) continue; 
 
