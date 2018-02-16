@@ -24,7 +24,7 @@ namespace _4craftThreadWatcher
             // initialize mongo connection and helper 
             var mongoHelper = new MongoHelper();
 
-            // temporarily removing the discord scanner - need to rework to use actual sockets and just listen for new posts 
+            // todo - need to rework to use actual sockets and just listen for new posts 
             //var discordThread = new System.Threading.Thread(HandleScanningDiscord);
             //discordThread.Start(); 
 
@@ -253,14 +253,14 @@ namespace _4craftThreadWatcher
                     }
 
                     // nothing found? 
-                    // wait for ten minutes before scanning again 
+                    // wait for 60 minutes before scanning again 
                     if (messageList.Count == 0)
-                        System.Threading.Thread.Sleep(60 * 10 * 1000); 
+                        System.Threading.Thread.Sleep(60 * 60 * 1000); 
                     else
-                        System.Threading.Thread.Sleep(10 * 1000);
+                        System.Threading.Thread.Sleep(60 * 10 * 1000); // or 10 minutes 
                 } catch (Exception e)
                 {
-                    System.Threading.Thread.Sleep(60 * 10 * 1000); 
+                    System.Threading.Thread.Sleep(60 * 60 * 1000); 
                 }
             }
         }
@@ -324,7 +324,12 @@ namespace _4craftThreadWatcher
 
                                 var threadUrl = string.Format("https://boards.4chan.org/{0}/thread/{1}.json", boardCode, no);
                                 var postInfo = WebStuff.FetchDataFromURLBlocking(threadUrl);
+
+                                Console.Write(postInfo); 
+
                                 var postData = new JSONObject(postInfo);
+                                if (postData == null) continue; 
+
                                 var postList = postData.GetField("posts").list; 
 
                                 foreach(var post in postList)
@@ -374,17 +379,17 @@ namespace _4craftThreadWatcher
                     Console.WriteLine(e.Message);
                     Console.WriteLine(e.StackTrace);
                     Console.WriteLine("Scan failed? Trying again in a sec.");
-                    System.Threading.Thread.Sleep(500); 
+                    System.Threading.Thread.Sleep(1000 * 60 * 60); // 1 hour cooldown 
                     continue; 
                 }
 
                 try
                 {
-                    System.Threading.Thread.Sleep(1000 * 60 * 5); // scan once every 5 minutes 
+                    System.Threading.Thread.Sleep(1000 * 60 * 15); // scan once every 15 minutes 
                 } catch(ThreadInterruptedException e)
                 {
-                    System.Threading.Thread.Sleep(1000 * 60 * 5); 
-                    Console.WriteLine("Scan thread woken up!"); 
+                    System.Threading.Thread.Sleep(1000 * 60 * 15); 
+                    Console.WriteLine("Scan thread woken up?!"); 
                 }
             }
         }
