@@ -299,6 +299,9 @@ namespace _4craftThreadWatcher
 
                             foreach (var thread in catalogThreads)
                             {
+                                if (!thread.HasField("posts"))
+                                    continue;
+
                                 var posts = thread.GetField("posts").list;
                                 if (posts.Count == 0)
                                     continue;
