@@ -329,7 +329,8 @@ namespace _4craftThreadWatcher
                                 var postInfo = WebStuff.FetchDataFromURLBlocking(threadUrl);
 
                                 var postData = new JSONObject(postInfo);
-                                if (postData == null) continue; 
+                                if (postData == null) continue;
+                                if (!postData.HasField("posts")) continue;
 
                                 var postList = postData.GetField("posts").list; 
 
