@@ -292,7 +292,17 @@ namespace _4craftThreadWatcher
 
                             var pageUrl = string.Format("https://a.4cdn.org/{0}/{1}.json", boardCode, i);
                             var catalogString = WebStuff.FetchDataFromURLBlocking(pageUrl);
+                            if(string.IsNullOrEmpty(catalogString))
+                            {
+                                continue;
+                            }
+
                             var catalogJson = new JSONObject(catalogString);
+                            if(catalogJson == null || !catalogJson.HasField("threads"))
+                            {
+                                continue;
+                            }
+
                             var catalogThreads = catalogJson.GetField("threads").list;
 
                             Console.WriteLine(string.Format("Scanning /{0}/ - {1}%", boardCode, ((float)i / (float)pages) * 100));
