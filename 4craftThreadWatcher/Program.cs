@@ -276,7 +276,7 @@ namespace _4craftThreadWatcher
 
                     var boardData = new JSONObject(boardString);
                     var boardArr = boardData.GetField("boards").list;
-                    var searchTerm = "4craft";
+                    var searchTerms = new string[] { "4craft", "fourcraft", "4*raft", "4c*aft", "4cr*ft", "4 craft", "four craft" };
                     var foundThreads = new JSONObject(JSONObject.Type.ARRAY);
 
                     foreach (var board in boardArr)
@@ -328,11 +328,22 @@ namespace _4craftThreadWatcher
                                 if (opPost.HasField("sub")) sub = opPost.GetField("sub").str.ToLower();
 
                                 var firstComment = opPost.GetField("com").str.ToLower();
-                                if (firstComment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
+
+                                var found = false;
+                                foreach(var searchTerm in searchTerms)
                                 {
-                                    opPost.AddField("board", boardCode); 
-                                    foundThreads.Add(opPost);
-                                    continue;
+                                    if (firstComment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
+                                    {
+                                        opPost.AddField("board", boardCode); 
+                                        foundThreads.Add(opPost);
+                                        found = true;
+                                        break;
+                                    }
+                                }
+
+                                if(found)
+                                {
+                                    continue; 
                                 }
 
                                 var threadUrl = string.Format("https://boards.4chan.org/{0}/thread/{1}.json", boardCode, no);
@@ -355,11 +366,22 @@ namespace _4craftThreadWatcher
                                     if (post.HasField("sub")) sub = post.GetField("sub").str.ToLower();
 
                                     var comment = post.GetField("com").str.ToLower();
-                                    if (comment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
+
+                                    found = false;
+                                    foreach (var searchTerm in searchTerms)
                                     {
-                                        post.AddField("board", boardCode);
-                                        foundThreads.Add(post);
-                                        continue;
+                                        if (comment.Contains(searchTerm) || sub.Contains(searchTerm) || name.Contains(searchTerm))
+                                        {
+                                            post.AddField("board", boardCode);
+                                            foundThreads.Add(post);
+                                            found = true;
+                                            break;
+                                        }
+                                    }
+
+                                    if(found)
+                                    {
+                                        continue; 
                                     }
                                 }
                             }
